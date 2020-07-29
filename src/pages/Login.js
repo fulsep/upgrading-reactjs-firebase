@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Form, FormGroup, Label, Input, Button} from 'reactstrap'
+import {Form, FormGroup, Label, Input, Button, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap'
 import {Link} from 'react-router-dom'
 import firebase from '../helper/firebase'
 
@@ -10,18 +10,24 @@ export default class Login extends Component {
       email: '',
       password: '',
       successMessage: '',
-      buttonDisabled: true
+      buttonDisabled: true,
+      errorMessage: '',
+      modalOpen: false,
+      processing: false
     }
   }
   login = async(e) => {
     e.preventDefault()
     const {email, password} = this.state
     try{
+      this.setState({processing: true, buttonDisabled: true})
       await firebase.auth().signInWithEmailAndPassword(email, password)
+      this.setState({processing: false, buttonDisabled: false}, ()=>{
+        this.props.history.push('/chatlist')
+      })
     } catch (e){
-      console.log(e.code)
+      this.setState({modalOpen: true, errorMessage: e.code, processing: false, buttonDisabled: false})
     }
-    this.props.history.push('/chatlist')
   }
   changeText = (e) => {
     this.setState({[e.target.name]:e.target.value})
@@ -48,6 +54,7 @@ export default class Login extends Component {
   }
   render() {
     return (
+        <>
         <div className="d-flex justify-content-center align-items-center h-100">
           <Form onSubmit={this.login} className="form-login">
             <h3 className="text-center">Chatoo Login</h3>
@@ -64,12 +71,25 @@ export default class Login extends Component {
               <Label for="password">Password</Label>
               <Input onChange={this.changeText} onKeyUp={this.formValidation} id="password" type="password" name="password" />
             </FormGroup>
-            <Button disabled={this.state.buttonDisabled} block>Login</Button>
+            <Button disabled={this.state.buttonDisabled} block>{this.state.processing?'Loading...':'Login'}</Button>
             <div className="mt-2">
               <span>Don't have an account? <Link to="/register">Register Here</Link></span>
             </div>
           </Form>
         </div>
+
+        <Modal isOpen={this.state.modalOpen}>
+          <ModalHeader>
+            Alert
+          </ModalHeader>
+          <ModalBody>
+            {this.state.errorMessage}
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={()=>this.setState({modalOpen: false})} color='primary'>OK</Button>
+          </ModalFooter>
+        </Modal>
+        </>
     )
   }
 }

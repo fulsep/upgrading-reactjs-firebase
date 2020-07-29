@@ -30,10 +30,8 @@ export default class Register extends Component {
         email: result.user.email
       })
       this.setState({processing: false, buttonDisabled: false})
-      this.props.history.push('/login', {successMessage: 'Successfully Registered!'})
     }catch(e){
-      this.setState({modalOpen: true, errorMessage: e.code})
-      this.setState({processing: false, buttonDisabled: false})
+      this.setState({modalOpen: true, errorMessage: e.code, processing: false, buttonDisabled: false})
     }
   }
 
