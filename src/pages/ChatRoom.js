@@ -20,11 +20,11 @@ export default class ChatRoom extends Component {
       if(e.target.value!==''){
         const {message} = this.state
         const time = new Date().getTime()
-        this.setState({chat: [...chat, ...[{
+        this.setState({chat: [...[{
           senderName: this.props.currentUser.email,
           message: this.state.message,
           id: time
-        }]], message: ''},()=>{
+        }], ...chat], message: ''},()=>{
           const db = firebase.database()
           db.ref(`/chat/${this.props.currentUser.uid}/${this.state.recipent}/${time}`).set({
             message,
@@ -34,8 +34,8 @@ export default class ChatRoom extends Component {
             message,
             senderName: this.props.currentUser.email
           })
+          this.chat.current.scrollTop = this.chat.current.scrollHeight
         })
-        this.chat.current.scrollTop = this.chat.current.scrollHeight + 20
       }
     }
   }
@@ -57,7 +57,7 @@ export default class ChatRoom extends Component {
         }
         chat.push(a)
       }
-      this.setState({chat})
+      this.setState({chat: chat.reverse()})
     })
   }
 
@@ -93,7 +93,7 @@ export default class ChatRoom extends Component {
         <div className="chat-container" ref={this.chat}>
           <div>
             <div className="h-100 d-flex flex-column-reverse">
-              {chat.reverse().map(item=>(
+              {chat.map(item=>(
                 <div key={item.id} className={`chat-baloon ${item.senderName===this.props.currentUser.email && 'text-right'}`}>
                   <div className={`chat-message ${item.senderName===this.props.currentUser.email && 'sender'}`}>{item.message}</div>
                 </div>
