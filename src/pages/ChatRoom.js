@@ -46,7 +46,7 @@ export default class ChatRoom extends Component {
 
   checkMessage = ()=> {
     const db = firebase.database()
-    db.ref(`/chat/${this.props.currentUser.uid}/${this.state.recipent}`).once('value',res=>{
+    db.ref(`/chat/${this.props.currentUser.uid}/${this.state.recipent}`).on('value',res=>{
       const data = res.val()
       const chat = []
       for(let keys in data){
@@ -57,15 +57,19 @@ export default class ChatRoom extends Component {
         }
         chat.push(a)
       }
-      this.setState({chat: chat.reverse()})
+      this.setState({chat: chat.reverse()},()=>{
+        this.chat.current.scrollTop = this.chat.current.scrollHeight
+        console.log('logged?')
+      })
     })
   }
 
   componentDidMount(){
     this.setState({recipent: this.props.user},()=>{
-      this.checkMessage()
       firebase.database().ref(`/users/${this.props.user}`).once('value', res => {
-        this.setState({recipentEmail: res.val().email})
+        this.setState({recipentEmail: res.val().email}, ()=>{
+          this.checkMessage()
+        })
       })
     })
   }
@@ -73,11 +77,12 @@ export default class ChatRoom extends Component {
   componentDidUpdate(){
     if(this.state.recipent!==this.props.user){
       firebase.database().ref(`/users/${this.props.user}`).once('value', res => {
-        this.setState({recipentEmail: res.val().email})
+        this.setState({recipentEmail: res.val().email}, ()=>{
+          this.checkMessage()
+        })
       })
       this.setState({recipent: this.props.user})
     }
-    this.checkMessage()
   }
 
   render() {
